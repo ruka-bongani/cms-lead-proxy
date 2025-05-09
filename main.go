@@ -12,10 +12,7 @@ import (
 )
 
 // DataFileds represents the minimal incoming payload
-type DataFields struct {
-	Source string            `json:"source"`
-	Fields map[string]string `json:"fields"`
-}
+type DataFields map[string]string
 
 func leadHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -25,12 +22,15 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		log.Println("Received payload:", dataFields)
+
 		// lookup dealer codes & floors
-		dealership := dataFields.Fields["Dealership"]
-		source := dataFields.Source
+		dealership := dataFields["Dealership"]
+		source := dataFields["Source"]
 		var dsc DealerSourceCode
 		if err := db.
-			Where("source = ? AND dealership = ?", source, dealership).
+			Where("source = ?", source).
+			Where("dealership = ?", dealership).
 			First(&dsc).Error; err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "dealer not found"})
 			return
@@ -38,8 +38,16 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 
 		// choose the correct floor code
 		floor := dsc.FloorCodeNew
-		if dataFields.Fields["Our cars"] == "Used vehicles" {
+		if dataFields["Our cars"] == "Used vehicles" {
 			floor = dsc.FloorCodeUsed
+		}
+
+		var contact Contact
+		if err := db.
+			Where("dealer_source_id = ?", dsc.ID).
+			First(&contact).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "contact not found"})
+			return
 		}
 
 		// build CMS lead payload
@@ -49,28 +57,26 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 			DealerSalesPerson: dsc.ContactPerson,
 			Region:            dealership,
 			Source:            source,
-			Contact: Contact{
-				Title:        "Mr",
-				FirstName:    "Dean",
-				Surname:      "Kabasa",
-				Email:        "dean@ruka.co.za",
-				CellPhone:    "0831111111",
-				Citizenship:  "South Africa",
-				BirthDate:    "1980-08-05",
-				Gender:       "Male",
-				HomeLanguage: "English",
-			},
+			Contact:           contact,
 		}
 
 		wrapper := LeadWrapper{Lead: lead}
 		leadJSON, _ := json.Marshal(wrapper)
 
 		// forward to external API
-		resp, err := http.Post(
+		req, err := http.NewRequest(
+			"POST",
 			os.Getenv("CMS_API_URL"),
-			"application/json",
 			bytes.NewReader(leadJSON),
 		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", os.Getenv("CMS_API_KEY"))
+
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -99,7 +105,7 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 }
 
 func main() {
-	db := setupDB()
+	db := setupCloudDB()
 
 	r := gin.Default()
 	r.POST("/lead", leadHandler(db))
