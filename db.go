@@ -22,8 +22,8 @@ type DealerSourceCode struct {
 	FloorCodeNew  string    `gorm:"column:floor_code_new;type:varchar(255)" json:"floor_code_new"`
 	FloorCodeUsed string    `gorm:"column:floor_code_used;type:varchar(255)" json:"floor_code_used"`
 	ContactPerson string    `gorm:"column:contact_person;type:varchar(255)" json:"contact_person"`
-	Created       time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP" json:"created"`
-	Modified      time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP" json:"modified"`
+	Created       time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
+	Modified      time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
 }
 
 // TableName overrides the default pluralized table name
@@ -34,12 +34,12 @@ func (DealerSourceCode) TableName() string {
 // LeadAudit is the Gorm model for auditing requests & responses
 type LeadAudit struct {
 	ID            uint64          `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"id"`
-	CreatedAt     time.Time       `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP" json:"created_at"`
+	CreatedAt     time.Time       `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created_at"`
 	InputPayload  json.RawMessage `gorm:"column:input_payload;type:json;not null" json:"input_payload"`
 	LeadPayload   json.RawMessage `gorm:"column:lead_payload;type:json;not null" json:"lead_payload"`
 	LeadReference string          `gorm:"column:lead_reference;type:varchar(255);not null" json:"lead_reference"`
-	Created       time.Time       `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP" json:"created"`
-	Modified      time.Time       `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP" json:"modified"`
+	Created       time.Time       `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
+	Modified      time.Time       `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
 }
 
 // TableName overrides the default pluralized table name
@@ -83,8 +83,8 @@ type Contact struct {
 	CreditGrading                string    `gorm:"column:credit_grading;type:varchar(50)" json:"creditGrading"`
 	CompanyName                  string    `gorm:"column:company_name;type:varchar(255)" json:"companyName"`
 	CompanyType                  string    `gorm:"column:company_type;type:varchar(100)" json:"companyType"`
-	Created                      time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP" json:"created"`
-	Modified                     time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP" json:"modified"`
+	Created                      time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
+	Modified                     time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
 }
 
 // TableName overrides the default table name

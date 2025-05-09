@@ -25,8 +25,9 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 		log.Println("Received payload:", dataFields)
 
 		// lookup dealer codes & floors
+		province := dataFields["Province"]
 		dealership := dataFields["Dealership"]
-		source := dataFields["Source"]
+		source := dataFields["source"]
 		var dsc DealerSourceCode
 		if err := db.
 			Where("source = ?", source).
@@ -55,7 +56,7 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 			DealerRef:         dsc.DealerCode,
 			DealerFloor:       floor,
 			DealerSalesPerson: dsc.ContactPerson,
-			Region:            dealership,
+			Region:            province,
 			Source:            source,
 			Contact:           contact,
 		}
