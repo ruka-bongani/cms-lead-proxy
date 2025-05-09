@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -64,6 +65,8 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 		wrapper := LeadWrapper{Lead: lead}
 		leadJSON, _ := json.Marshal(wrapper)
 
+		log.Printf("Lead JSON: %s", leadJSON)
+
 		// forward to external API
 		req, err := http.NewRequest(
 			"POST",
@@ -84,18 +87,29 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 		defer resp.Body.Close()
 
-		var cmsResp CMSResponse
-		if err := json.NewDecoder(resp.Body).Decode(&cmsResp); err != nil {
+		// read the raw response
+		respBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
+		// unmarshal into your struct for easy field access
+		var cmsResp CMSResponse
+		if err := json.Unmarshal(respBytes, &cmsResp); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		log.Printf("CMS API raw response: %s", respBytes)
+
 		// audit to database
 		inputJSON, _ := json.Marshal(dataFields)
 		audit := LeadAudit{
-			InputPayload:  json.RawMessage(inputJSON),
-			LeadPayload:   json.RawMessage(leadJSON),
-			LeadReference: cmsResp.LeadReference,
+			InputPayload:       json.RawMessage(inputJSON),
+			LeadPayload:        json.RawMessage(leadJSON),
+			CMSResponsePayload: json.RawMessage(respBytes),
+			LeadReference:      cmsResp.LeadReference,
 		}
 		if err := db.Create(&audit).Error; err != nil {
 			log.Printf("audit save error: %v", err)

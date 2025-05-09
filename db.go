@@ -14,8 +14,22 @@ import (
 )
 
 // DealerSourceCode represents the lookup table for dealer codes & floors
+type Dealer struct {
+	ID       uint64    `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"id"`
+	Name     string    `gorm:"column:name;type:varchar(255);not null" json:"name"`
+	Created  time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
+	Modified time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
+}
+
+// TableName overrides the default pluralized table name
+func (Dealer) TableName() string {
+	return "dealer"
+}
+
+// DealerSourceCode represents the lookup table for dealer codes & floors
 type DealerSourceCode struct {
 	ID            uint64    `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"id"`
+	DealerID      uint64    `gorm:"column:dealer_id;type:bigint unsigned;not null;index" json:"dealer_id"`
 	Source        string    `gorm:"column:source;type:varchar(255);not null" json:"source"`
 	Dealership    string    `gorm:"column:dealership;type:varchar(255);not null" json:"dealership"`
 	DealerCode    string    `gorm:"column:dealer_code;type:varchar(255);not null" json:"dealer_code"`
@@ -33,13 +47,14 @@ func (DealerSourceCode) TableName() string {
 
 // LeadAudit is the Gorm model for auditing requests & responses
 type LeadAudit struct {
-	ID            uint64          `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"id"`
-	CreatedAt     time.Time       `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created_at"`
-	InputPayload  json.RawMessage `gorm:"column:input_payload;type:json;not null" json:"input_payload"`
-	LeadPayload   json.RawMessage `gorm:"column:lead_payload;type:json;not null" json:"lead_payload"`
-	LeadReference string          `gorm:"column:lead_reference;type:varchar(255);not null" json:"lead_reference"`
-	Created       time.Time       `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
-	Modified      time.Time       `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
+	ID                 uint64          `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"id"`
+	CreatedAt          time.Time       `gorm:"column:created_at;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created_at"`
+	InputPayload       json.RawMessage `gorm:"column:input_payload;type:json;not null" json:"input_payload"`
+	LeadPayload        json.RawMessage `gorm:"column:lead_payload;type:json;not null" json:"lead_payload"`
+	CMSResponsePayload json.RawMessage `gorm:"column:cms_response_payload;type:json;not null" json:"cms_response_payload"`
+	LeadReference      string          `gorm:"column:lead_reference;type:varchar(255);not null" json:"lead_reference"`
+	Created            time.Time       `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
+	Modified           time.Time       `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
 }
 
 // TableName overrides the default pluralized table name
