@@ -92,106 +92,6 @@ type DataFields struct {
 	Fields map[string]string `json:"fields"`
 }
 
-// LeadWrapper & nested types for the CMS payload
-type LeadWrapper struct {
-	Lead Lead `json:"lead"`
-}
-
-type Lead struct {
-	DealerRef         string            `json:"dealerRef"`
-	DealerFloor       string            `json:"dealerFloor"`
-	DealerSalesPerson string            `json:"dealerSalesPerson"`
-	Region            string            `json:"region"`
-	Source            string            `json:"source"`
-	TransactionID     string            `json:"transactionID"`
-	ExtLeadRef        string            `json:"extLeadRef"`
-	PromotionalCode   string            `json:"promotionalCode"`
-	UtmParameters     string            `json:"utmParameters"`
-	CountryCode       string            `json:"countryCode"`
-	Contact           Contact           `json:"contact"`
-	Seeks             Seeks             `json:"seeks"`
-	Referrer          map[string]string `json:"referrer"`
-	Options           map[string]string `json:"options"`
-	TradeIns          []TradeIn         `json:"TradeIns"`
-}
-
-type Contact struct {
-	Title                        string `json:"title"`
-	FirstName                    string `json:"firstName"`
-	Surname                      string `json:"surname"`
-	Email                        string `json:"email"`
-	OfficePhone                  string `json:"officePhone"`
-	CellPhone                    string `json:"cellPhone"`
-	DriversLicense               string `json:"driversLicense"`
-	IncomeBracket                string `json:"incomeBracket"`
-	PreferredContactMethod       string `json:"preferredContactMethod"`
-	PreferredContactTime         string `json:"preferredContactTime"`
-	Citizenship                  string `json:"citizenship"`
-	IDNo                         string `json:"idNo"`
-	BirthDate                    string `json:"birthDate"`
-	Gender                       string `json:"gender"`
-	Ethnicity                    string `json:"ethnicity"`
-	HomeLanguage                 string `json:"homeLanguage"`
-	ResidentialAddressLine1      string `json:"residentialAddressLine1"`
-	ResidentialAddressLine2      string `json:"residentialAddressLine2"`
-	ResidentialAddressSuburb     string `json:"residentialAddressSuburb"`
-	ResidentialAddressCity       string `json:"residentialAddressCity"`
-	ResidentialAddressPostalCode string `json:"residentialAddressPostalCode"`
-	ResidentialAddressProvince   string `json:"residentialAddressProvince"`
-	PostalAddressLine1           string `json:"postalAddressLine1"`
-	PostalAddressLine2           string `json:"postalAddressLine2"`
-	PostalAddressSuburb          string `json:"postalAddressSuburb"`
-	PostalAddressCity            string `json:"postalAddressCity"`
-	PostalAddressCode            string `json:"postalAddressCode"`
-	PostalAddressProvince        string `json:"postalAddressProvince"`
-	MarketingConsent             string `json:"marketingConsent"`
-	CreditGrading                string `json:"creditGrading"`
-	CompanyName                  string `json:"companyName"`
-	CompanyType                  string `json:"companyType"`
-}
-
-type Seeks struct {
-	Used             string `json:"used"`
-	Brand            string `json:"brand"`
-	Model            string `json:"model"`
-	MmCode           string `json:"mmCode"`
-	ModelCode        string `json:"modelCode"`
-	Kms              string `json:"kms"`
-	Year             string `json:"year"`
-	Colour           string `json:"colour"`
-	StockNr          string `json:"stockNr"`
-	Price            string `json:"price"`
-	Deposit          string `json:"deposit"`
-	TestDrive        string `json:"testDrive"`
-	TradeIn          string `json:"tradeIn"`
-	Finance          string `json:"finance"`
-	Valuation        string `json:"valuation"`
-	Registration     string `json:"registration"`
-	Special          string `json:"special"`
-	SpecialBannerURL string `json:"specialBannerURL"`
-	ServiceHistory   string `json:"serviceHistory"`
-	Comments         string `json:"comments"`
-	Vin              string `json:"vin"`
-}
-
-type TradeIn struct {
-	Make       string  `json:"Make"`
-	Model      string  `json:"Model"`
-	Variant    string  `json:"Variant"`
-	Year       int     `json:"Year"`
-	Mileage    int     `json:"Mileage"`
-	MMCode     *int    `json:"MMCode"`
-	IsFinanced bool    `json:"IsFinanced"`
-	Price      float64 `json:"Price"`
-}
-
-type CMSResponse struct {
-	Code          string `json:"code"`
-	LeadReference string `json:"leadReference"`
-	Status        string `json:"status"`
-	Message       string `json:"message"`
-}
-
 func leadHandler(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var dataFields DataFields
@@ -235,23 +135,6 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 				Gender:       "Male",
 				HomeLanguage: "English",
 			},
-			Seeks: Seeks{
-				Used:     "1",
-				Brand:    "Ford",
-				Model:    "Fiesta ST",
-				Kms:      "15000",
-				Year:     "2016",
-				StockNr:  "123Nr",
-				Price:    "199800",
-				Deposit:  "20500.00",
-				Comments: "Comment test",
-			},
-			Referrer: map[string]string{},
-			Options:  map[string]string{},
-			TradeIns: []TradeIn{
-				{Make: "Mazda", Model: "3", Variant: "3 1.6 tdi", Year: 2018, Mileage: 60500, Price: 230500},
-				{Make: "Ford", Model: "Figo", Variant: "1.4", Year: 2016, Mileage: 98500, MMCode: ptrInt(12344321), IsFinanced: true, Price: 160500.70},
-			},
 		}
 
 		wrapper := LeadWrapper{Lead: lead}
@@ -290,15 +173,13 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func ptrInt(i int) *int { return &i }
-
 func main() {
 	db := setupDB()
 
 	r := gin.Default()
 	r.POST("/lead", leadHandler(db))
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("API_PORT")
 	log.Println("Listening on :", port)
 	log.Fatal(r.Run(":" + port))
 }
