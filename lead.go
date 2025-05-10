@@ -18,6 +18,7 @@ type Lead struct {
 	CountryCode       string            `json:"countryCode"`
 	Contact           Contact           `json:"contact"`
 	Seeks             Seeks             `json:"seeks"`
+	Appointment       Appointment       `json:"appointment"`
 	Referrer          map[string]string `json:"referrer"`
 	Options           map[string]string `json:"options"`
 	TradeIns          []TradeIn         `json:"TradeIns"`
@@ -63,4 +64,13 @@ type CMSResponse struct {
 	LeadReference string `json:"leadReference"`
 	Status        string `json:"status"`
 	Message       string `json:"message"`
+}
+
+type Appointment struct {
+	DateOfAppointment string `json:"DateOfAppointment"`
+	PartOfTheDay      string `json:"PartOfTheDay"`
+	AppointmentType   string `json:"AppointmentType"`
+	ConsentEmail      bool   `json:"ConsentEmail"`
+	ConsentPhone      bool   `json:"ConsentPhone"`
+	ConsentSMS        bool   `json:"ConsentSMS"`
 }

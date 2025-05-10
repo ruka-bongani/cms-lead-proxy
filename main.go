@@ -3,10 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -28,10 +31,10 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 		// lookup dealer codes & floors
 		province := dataFields["Province"]
 		dealership := dataFields["Dealership"]
-		source := dataFields["source"]
+		internal_source_code := dataFields["Source"]
 		var dsc DealerSourceCode
 		if err := db.
-			Where("source = ?", source).
+			Where("internal_source_code = ?", internal_source_code).
 			Where("dealership = ?", dealership).
 			First(&dsc).Error; err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "dealer not found"})
@@ -44,12 +47,19 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 			floor = dsc.FloorCodeUsed
 		}
 
-		var contact Contact
-		if err := db.
-			Where("dealer_source_id = ?", dsc.ID).
-			First(&contact).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "contact not found"})
-			return
+		contact := Contact{
+			FirstName:              dataFields["FullName"],
+			CellPhone:              dataFields["MSISDN"],
+			PreferredContactMethod: "Cellphone",
+		}
+
+		if len(dataFields["AlternateMSISDN"]) >= 10 {
+			contact.CellPhone = dataFields["MSISDN"]
+		}
+
+		date, err := parseAppointment(dataFields["CallBackDate"], dataFields["CallBackTime"])
+		if err != nil {
+			panic(err)
 		}
 
 		// build CMS lead payload
@@ -58,8 +68,12 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 			DealerFloor:       floor,
 			DealerSalesPerson: dsc.ContactPerson,
 			Region:            province,
-			Source:            source,
+			Source:            dsc.Source,
 			Contact:           contact,
+			Appointment: Appointment{
+				DateOfAppointment: date,
+				PartOfTheDay:      dataFields["CallBackTime"],
+			},
 		}
 
 		wrapper := LeadWrapper{Lead: lead}
@@ -115,8 +129,37 @@ func leadHandler(db *gorm.DB) gin.HandlerFunc {
 			log.Printf("audit save error: %v", err)
 		}
 
+		contact.LeadAuditID = audit.ID
+		if err := db.Create(&contact).Error; err != nil {
+			log.Printf("contact save error: %v", err)
+		}
+
 		c.JSON(resp.StatusCode, cmsResp)
 	}
+}
+
+func parseAppointment(dateStr, timeRange string) (string, error) {
+	date, err := time.Parse("02.01.2006", dateStr)
+	if err != nil {
+		return "", fmt.Errorf("invalid date: %w", err)
+	}
+
+	parts := strings.Split(timeRange, " - ")
+	if len(parts) == 0 {
+		return "", fmt.Errorf("invalid time range")
+	}
+	t, err := time.Parse("3:04pm", parts[0])
+	if err != nil {
+		return "", fmt.Errorf("invalid time: %w", err)
+	}
+
+	combined := time.Date(
+		date.Year(), date.Month(), date.Day(),
+		t.Hour(), t.Minute(), 0, 0,
+		time.Local,
+	)
+
+	return combined.Format("2006-01-02 15:04:05"), nil
 }
 
 func main() {

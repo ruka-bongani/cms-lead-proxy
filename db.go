@@ -28,16 +28,17 @@ func (Dealer) TableName() string {
 
 // DealerSourceCode represents the lookup table for dealer codes & floors
 type DealerSourceCode struct {
-	ID            uint64    `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"id"`
-	DealerID      uint64    `gorm:"column:dealer_id;type:bigint unsigned;not null;index" json:"dealer_id"`
-	Source        string    `gorm:"column:source;type:varchar(255);not null" json:"source"`
-	Dealership    string    `gorm:"column:dealership;type:varchar(255);not null" json:"dealership"`
-	DealerCode    string    `gorm:"column:dealer_code;type:varchar(255);not null" json:"dealer_code"`
-	FloorCodeNew  string    `gorm:"column:floor_code_new;type:varchar(255)" json:"floor_code_new"`
-	FloorCodeUsed string    `gorm:"column:floor_code_used;type:varchar(255)" json:"floor_code_used"`
-	ContactPerson string    `gorm:"column:contact_person;type:varchar(255)" json:"contact_person"`
-	Created       time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
-	Modified      time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
+	ID                 uint64    `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"id"`
+	DealerID           uint64    `gorm:"column:dealer_id;type:bigint unsigned;not null;index" json:"dealer_id"`
+	InternalSourceCode string    `gorm:"column:internal_source_code;type:varchar(255);not null" json:"internal_source_code"`
+	Source             string    `gorm:"column:source;type:varchar(255);not null" json:"source"`
+	Dealership         string    `gorm:"column:dealership;type:varchar(255);not null" json:"dealership"`
+	DealerCode         string    `gorm:"column:dealer_code;type:varchar(255);not null" json:"dealer_code"`
+	FloorCodeNew       string    `gorm:"column:floor_code_new;type:varchar(255)" json:"floor_code_new"`
+	FloorCodeUsed      string    `gorm:"column:floor_code_used;type:varchar(255)" json:"floor_code_used"`
+	ContactPerson      string    `gorm:"column:contact_person;type:varchar(255)" json:"contact_person"`
+	Created            time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
+	Modified           time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
 }
 
 // TableName overrides the default pluralized table name
@@ -65,7 +66,7 @@ func (LeadAudit) TableName() string {
 // Contact represents the contact person for a given dealer source
 type Contact struct {
 	ID                           uint64    `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"-"`
-	DealerSourceID               uint64    `gorm:"column:dealer_source_id;type:bigint unsigned;not null;index" json:"-"`
+	LeadAuditID                  uint64    `gorm:"column:lead_audit_id;type:bigint unsigned;not null;index" json:"-"`
 	Title                        string    `gorm:"column:title;type:varchar(255);not null" json:"title"`
 	FirstName                    string    `gorm:"column:first_name;type:varchar(255);not null" json:"firstName"`
 	Surname                      string    `gorm:"column:surname;type:varchar(255);not null" json:"surname"`
@@ -78,7 +79,7 @@ type Contact struct {
 	PreferredContactTime         string    `gorm:"column:preferred_contact_time;type:varchar(100)" json:"preferredContactTime"`
 	Citizenship                  string    `gorm:"column:citizenship;type:varchar(100);not null" json:"citizenship"`
 	IDNo                         string    `gorm:"column:id_no;type:varchar(50)" json:"idNo"`
-	BirthDate                    string    `gorm:"column:birth_date;type:date" json:"birthDate"`
+	BirthDate                    string    `gorm:"column:birth_date;type:varchar(50)" json:"birthDate"`
 	Gender                       string    `gorm:"column:gender;type:varchar(50)" json:"gender"`
 	Ethnicity                    string    `gorm:"column:ethnicity;type:varchar(100)" json:"ethnicity"`
 	HomeLanguage                 string    `gorm:"column:home_language;type:varchar(100)" json:"homeLanguage"`
@@ -94,12 +95,12 @@ type Contact struct {
 	PostalAddressCity            string    `gorm:"column:postal_address_city;type:varchar(100)" json:"postalAddressCity"`
 	PostalAddressCode            string    `gorm:"column:postal_address_code;type:varchar(20)" json:"postalAddressCode"`
 	PostalAddressProvince        string    `gorm:"column:postal_address_province;type:varchar(100)" json:"postalAddressProvince"`
-	MarketingConsent             string    `gorm:"column:marketing_consent;type:tinyint(1)" json:"marketingConsent"`
+	MarketingConsent             bool      `gorm:"column:marketing_consent;type:tinyint(1)" json:"marketingConsent"`
 	CreditGrading                string    `gorm:"column:credit_grading;type:varchar(50)" json:"creditGrading"`
 	CompanyName                  string    `gorm:"column:company_name;type:varchar(255)" json:"companyName"`
 	CompanyType                  string    `gorm:"column:company_type;type:varchar(100)" json:"companyType"`
-	Created                      time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"created"`
-	Modified                     time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"modified"`
+	Created                      time.Time `gorm:"column:created;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"-"`
+	Modified                     time.Time `gorm:"column:modified;type:datetime;default:CURRENT_TIMESTAMP;autoCreateTime" json:"-"`
 }
 
 // TableName overrides the default table name
