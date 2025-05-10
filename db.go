@@ -66,18 +66,18 @@ func (LeadAudit) TableName() string {
 // Contact represents the contact person for a given dealer source
 type Contact struct {
 	ID                           uint64    `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"-"`
-	LeadAuditID                  uint64    `gorm:"column:lead_audit_id;type:bigint unsigned;not null;index" json:"-"`
-	Title                        string    `gorm:"column:title;type:varchar(255);not null" json:"title"`
-	FirstName                    string    `gorm:"column:first_name;type:varchar(255);not null" json:"firstName"`
-	Surname                      string    `gorm:"column:surname;type:varchar(255);not null" json:"surname"`
-	Email                        string    `gorm:"column:email;type:varchar(255);not null;uniqueIndex" json:"email"`
+	LeadAuditID                  uint64    `gorm:"column:lead_audit_id;type:bigint unsigned" json:"-"`
+	Title                        string    `gorm:"column:title;type:varchar(255)" json:"title"`
+	FirstName                    string    `gorm:"column:first_name;type:varchar(255)" json:"firstName"`
+	Surname                      string    `gorm:"column:surname;type:varchar(255)" json:"surname"`
+	Email                        string    `gorm:"column:email;type:varchar(255)" json:"email"`
 	OfficePhone                  string    `gorm:"column:office_phone;type:varchar(50)" json:"officePhone"`
-	CellPhone                    string    `gorm:"column:cell_phone;type:varchar(50);not null" json:"cellPhone"`
+	CellPhone                    string    `gorm:"column:cell_phone;type:varchar(50)" json:"cellPhone"`
 	DriversLicense               string    `gorm:"column:drivers_license;type:varchar(100)" json:"driversLicense"`
 	IncomeBracket                string    `gorm:"column:income_bracket;type:varchar(100)" json:"incomeBracket"`
 	PreferredContactMethod       string    `gorm:"column:preferred_contact_method;type:varchar(100)" json:"preferredContactMethod"`
 	PreferredContactTime         string    `gorm:"column:preferred_contact_time;type:varchar(100)" json:"preferredContactTime"`
-	Citizenship                  string    `gorm:"column:citizenship;type:varchar(100);not null" json:"citizenship"`
+	Citizenship                  string    `gorm:"column:citizenship;type:varchar(100)" json:"citizenship"`
 	IDNo                         string    `gorm:"column:id_no;type:varchar(50)" json:"idNo"`
 	BirthDate                    string    `gorm:"column:birth_date;type:varchar(50)" json:"birthDate"`
 	Gender                       string    `gorm:"column:gender;type:varchar(50)" json:"gender"`
